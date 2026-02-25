@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Salons - Salon Booking</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Salon Booking</a>
+      <button class="navbar-toggle" id="navToggle">&#9776;</button>
+      <div class="navbar-links" id="navLinks">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/login.html" class="nav-link nav-auth">Login</a>
+        <a href="/register.html" class="nav-link nav-auth">Register</a>
+        <a href="/owner/dashboard.html" class="nav-link nav-owner" style="display:none">Dashboard</a>
+        <a href="/owner/profile.html" class="nav-link nav-owner" style="display:none">Profile</a>
+        <a href="/owner/bookings.html" class="nav-link nav-owner" style="display:none">Bookings</a>
+        <a href="/customer/dashboard.html" class="nav-link nav-customer" style="display:none">Browse Salons</a>
+        <a href="/customer/my-bookings.html" class="nav-link nav-customer" style="display:none">My Bookings</a>
+        <span class="nav-link nav-user" style="display:none">
+          Hi, <span id="nav-user-name"></span>
+          <a href="#" id="logout-btn" class="nav-link">Logout</a>
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container section">
+    <div class="page-header">
+      <h1>Browse Salons</h1>
+      <p>Find and book your next appointment</p>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <input type="text" id="search-input" class="form-control" placeholder="Search by salon name...">
+      </div>
+      <div class="col">
+        <select id="service-filter" class="form-control">
+          <option value="">All Services</option>
+        </select>
+      </div>
+      <div class="col" style="flex:0">
+        <button id="search-btn" class="btn btn-primary">Search</button>
+      </div>
+    </div>
+
+    <div id="salons-container" class="row">
+      <div class="text-center w-100">
+        <div class="loading-spinner"></div>
+        <p>Loading salons...</p>
+      </div>
+    </div>
+
+    <div id="no-results" class="empty-state" style="display:none">
+      <h3>No salons found</h3>
+      <p>Try adjusting your search or filters</p>
+    </div>
+  </div>
+
+  <div id="alerts"></div>
+  <script src="/lib/jquery-3.7.1.min.js"></script>
+  <script>window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"><\/script>')</script>
+  <script src="/js/api.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/customer.js"></script>
+</body>
+</html>

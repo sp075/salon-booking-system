@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon Booking - Find &amp; Book Salon Services</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .hero {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+      color: var(--color-white);
+      padding: 4rem 1rem;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      color: var(--color-white);
+      margin-bottom: 0.75rem;
+    }
+    .hero p {
+      font-size: 1.15rem;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 2rem;
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .hero-buttons .btn {
+      min-width: 180px;
+    }
+    .features {
+      padding: 3rem 1rem;
+    }
+    .features .section-title {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .feature-card {
+      text-align: center;
+      padding: 2rem 1.5rem;
+    }
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: var(--color-primary);
+    }
+    .feature-card h3 {
+      margin-bottom: 0.5rem;
+    }
+    .feature-card p {
+      font-size: 0.95rem;
+    }
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 1.8rem; }
+      .hero p { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Salon Booking</a>
+      <button class="navbar-toggle" id="navToggle">&#9776;</button>
+      <div class="navbar-links" id="navLinks">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/login.html" class="nav-link nav-auth">Login</a>
+        <a href="/register.html" class="nav-link nav-auth">Register</a>
+        <a href="/owner/dashboard.html" class="nav-link nav-owner" style="display:none">Dashboard</a>
+        <a href="/owner/profile.html" class="nav-link nav-owner" style="display:none">Profile</a>
+        <a href="/owner/bookings.html" class="nav-link nav-owner" style="display:none">Bookings</a>
+        <a href="/customer/dashboard.html" class="nav-link nav-customer" style="display:none">Browse Salons</a>
+        <a href="/customer/my-bookings.html" class="nav-link nav-customer" style="display:none">My Bookings</a>
+        <span class="nav-link nav-user" style="display:none">
+          Hi, <span id="nav-user-name"></span>
+          <a href="#" id="logout-btn" class="nav-link">Logout</a>
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Welcome to Salon Booking</h1>
+      <p>Find and book your favorite salon services</p>
+      <div class="hero-buttons">
+        <a href="/customer/dashboard.html" class="btn btn-lg" style="background:#fff;color:var(--color-primary);border-color:#fff;">Browse Salons</a>
+        <a href="/owner/dashboard.html" class="btn btn-lg btn-outline" style="color:#fff;border-color:#fff;">I'm a Salon Owner</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2 class="section-title">Why Choose Us</h2>
+      <div class="row">
+        <div class="col-4">
+          <div class="card feature-card">
+            <div class="feature-icon">&#128197;</div>
+            <h3>Easy Booking</h3>
+            <p>Book appointments in convenient 30-minute time slots that fit your schedule perfectly.</p>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="card feature-card">
+            <div class="feature-icon">&#9986;</div>
+            <h3>Multiple Services</h3>
+            <p>Select and book multiple salon services at once for a complete grooming experience.</p>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="card feature-card">
+            <div class="feature-icon">&#11088;</div>
+            <h3>Reviews &amp; Ratings</h3>
+            <p>Read and share honest reviews to help others find the best salons in town.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="alerts"></div>
+  <script src="/lib/jquery-3.7.1.min.js"></script>
+  <script>window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"><\/script>')</script>
+  <script src="/js/api.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    $(function () {
+      // Mobile nav toggle
+      $('#navToggle').on('click', function () {
+        $('#navLinks').toggleClass('open');
+      });
+
+      // Check auth and update navbar
+      Auth.checkAuth().then(function () {
+        Auth.updateNavbar();
+      });
+
+      // Logout handler
+      $(document).on('click', '#logout-btn', function (e) {
+        e.preventDefault();
+        Auth.logout();
+      });
+    });
+  </script>
+</body>
+</html>

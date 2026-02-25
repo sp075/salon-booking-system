@@ -1,0 +1,251 @@
+/* ============================================================
+   Saloon Booking System - Calendar / Slot Picker Styles
+   ============================================================ */
+
+/* --- Date Picker --- */
+.date-picker {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.date-picker::-webkit-scrollbar {
+  height: 4px;
+}
+
+.date-picker::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+.date-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  padding: 0.65rem 0.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background: var(--color-white);
+  transition: all 0.2s ease;
+  user-select: none;
+  text-align: center;
+}
+
+.date-item:hover {
+  border-color: var(--color-primary-light);
+  background-color: rgba(108, 99, 255, 0.04);
+}
+
+.date-item.selected {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.date-item.selected .date-day,
+.date-item.selected .date-weekday {
+  color: var(--color-white);
+}
+
+.date-item.unavailable {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: var(--color-light);
+}
+
+.date-item.unavailable:hover {
+  border-color: var(--color-border);
+  background-color: var(--color-light);
+}
+
+.date-weekday {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-dark-light);
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.date-day {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  line-height: 1.2;
+}
+
+.date-month {
+  font-size: 0.7rem;
+  color: var(--color-dark-light);
+  margin-top: 0.1rem;
+}
+
+/* --- Time Slot Grid --- */
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.slot-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-accent-dark);
+  transition: all 0.2s ease;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.slot-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-accent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 0;
+}
+
+.slot-item span {
+  position: relative;
+  z-index: 1;
+}
+
+.slot-item:hover:not(.unavailable) {
+  border-color: var(--color-accent-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(46, 196, 182, 0.2);
+}
+
+.slot-item:hover:not(.unavailable)::before {
+  opacity: 0.06;
+}
+
+/* Selected Slot */
+.slot-item.selected {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: 0 3px 10px rgba(108, 99, 255, 0.3);
+  animation: slotPop 0.25s ease;
+}
+
+.slot-item.selected::before {
+  display: none;
+}
+
+@keyframes slotPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Unavailable Slot */
+.slot-item.unavailable {
+  border-color: var(--color-border);
+  background-color: #F1F2F6;
+  color: #B2BEC3;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.slot-item.unavailable:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* --- Slot Section Labels --- */
+.slot-section-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-dark-light);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 1.25rem 0 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* --- Selected Slot Summary --- */
+.slot-summary {
+  background: rgba(108, 99, 255, 0.06);
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin-top: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.slot-summary .summary-label {
+  font-size: 0.8rem;
+  color: var(--color-dark-light);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.slot-summary .summary-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* --- No Slots Message --- */
+.no-slots {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--color-dark-light);
+  font-size: 0.95rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .slot-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .slot-item {
+    padding: 0.6rem 0.4rem;
+    font-size: 0.8rem;
+  }
+
+  .date-item {
+    min-width: 60px;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .date-day {
+    font-size: 1.05rem;
+  }
+
+  .slot-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .slot-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
