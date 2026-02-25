@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon Profile - Salon Booking</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .profile-section {
+      margin-bottom: 1.5rem;
+    }
+    .profile-section .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .service-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--color-border);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .service-item:last-child {
+      border-bottom: none;
+    }
+    .service-info {
+      flex: 1;
+      min-width: 150px;
+    }
+    .service-info .service-name {
+      font-weight: 600;
+      color: var(--color-dark);
+    }
+    .service-info .service-detail {
+      font-size: 0.85rem;
+      color: var(--color-dark-light);
+    }
+    .service-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .service-controls .price-input {
+      width: 100px;
+      padding: 0.35rem 0.5rem;
+      font-size: 0.85rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+    }
+    .service-controls .price-input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--color-border);
+      border-radius: 24px;
+      transition: 0.3s;
+    }
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--color-white);
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: var(--color-success);
+    }
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(20px);
+    }
+    @media (max-width: 768px) {
+      .service-controls { width: 100%; justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Salon Booking</a>
+      <button class="navbar-toggle" id="navToggle">&#9776;</button>
+      <div class="navbar-links" id="navLinks">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/login.html" class="nav-link nav-auth">Login</a>
+        <a href="/register.html" class="nav-link nav-auth">Register</a>
+        <a href="/owner/dashboard.html" class="nav-link nav-owner" style="display:none">Dashboard</a>
+        <a href="/owner/profile.html" class="nav-link nav-owner" style="display:none">Profile</a>
+        <a href="/owner/bookings.html" class="nav-link nav-owner" style="display:none">Bookings</a>
+        <a href="/customer/dashboard.html" class="nav-link nav-customer" style="display:none">Browse Salons</a>
+        <a href="/customer/my-bookings.html" class="nav-link nav-customer" style="display:none">My Bookings</a>
+        <span class="nav-link nav-user" style="display:none">
+          Hi, <span id="nav-user-name"></span>
+          <a href="#" id="logout-btn" class="nav-link">Logout</a>
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top:1.5rem;">
+    <div class="page-header">
+      <h1>Salon Profile</h1>
+      <p>Manage your salon details, operating hours, and services</p>
+    </div>
+
+    <!-- Salon Details Section -->
+    <div class="card profile-section">
+      <div class="card-header">Salon Details</div>
+      <div class="card-body">
+        <form id="profile-form">
+          <div class="form-group">
+            <label for="salonName">Salon Name</label>
+            <input type="text" id="salonName" class="form-control" placeholder="Enter your salon name" required>
+          </div>
+          <div class="form-group">
+            <label for="address">Address</label>
+            <textarea id="address" class="form-control" placeholder="Enter your salon address" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" id="save-profile-btn">Save Details</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Operating Hours Section -->
+    <div class="card profile-section">
+      <div class="card-header">Operating Hours</div>
+      <div class="card-body">
+        <form id="schedule-form">
+          <div class="row">
+            <div class="col-4">
+              <div class="form-group">
+                <label for="openTime">Open Time</label>
+                <input type="time" id="openTime" class="form-control" required>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label for="closeTime">Close Time</label>
+                <input type="time" id="closeTime" class="form-control" required>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label for="dayOff">Weekly Day Off</label>
+                <select id="dayOff" class="form-control">
+                  <option value="">No day off</option>
+                  <option value="0">Sunday</option>
+                  <option value="1">Monday</option>
+                  <option value="2">Tuesday</option>
+                  <option value="3">Wednesday</option>
+                  <option value="4">Thursday</option>
+                  <option value="5">Friday</option>
+                  <option value="6">Saturday</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" id="save-schedule-btn">Save Schedule</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Services Section -->
+    <div class="card profile-section" id="services">
+      <div class="card-header">
+        <span>Services</span>
+      </div>
+      <div class="card-body" id="services-list">
+        <div class="loading-spinner-container">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">Loading services...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alerts"></div>
+  <script src="/lib/jquery-3.7.1.min.js"></script>
+  <script>window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"><\/script>')</script>
+  <script src="/js/api.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/owner.js"></script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Appointment - Salon Booking</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/calendar.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Salon Booking</a>
+      <button class="navbar-toggle" id="navToggle">&#9776;</button>
+      <div class="navbar-links" id="navLinks">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/login.html" class="nav-link nav-auth">Login</a>
+        <a href="/register.html" class="nav-link nav-auth">Register</a>
+        <a href="/owner/dashboard.html" class="nav-link nav-owner" style="display:none">Dashboard</a>
+        <a href="/owner/profile.html" class="nav-link nav-owner" style="display:none">Profile</a>
+        <a href="/owner/bookings.html" class="nav-link nav-owner" style="display:none">Bookings</a>
+        <a href="/customer/dashboard.html" class="nav-link nav-customer" style="display:none">Browse Salons</a>
+        <a href="/customer/my-bookings.html" class="nav-link nav-customer" style="display:none">My Bookings</a>
+        <span class="nav-link nav-user" style="display:none">
+          Hi, <span id="nav-user-name"></span>
+          <a href="#" id="logout-btn" class="nav-link">Logout</a>
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container section">
+    <a href="#" id="back-link" class="btn btn-outline mb-2">&larr; Back to Salon</a>
+    <h1>Book Appointment</h1>
+    <p id="salon-name-display" class="text-muted"></p>
+
+    <!-- Progress Steps -->
+    <div class="booking-progress mb-3">
+      <div class="progress-step active" data-step="1">
+        <span class="step-number">1</span>
+        <span class="step-label">Select Services</span>
+      </div>
+      <div class="progress-step" data-step="2">
+        <span class="step-number">2</span>
+        <span class="step-label">Pick Date & Time</span>
+      </div>
+      <div class="progress-step" data-step="3">
+        <span class="step-number">3</span>
+        <span class="step-label">Review & Confirm</span>
+      </div>
+    </div>
+
+    <!-- Step 1: Select Services -->
+    <div id="step-1" class="booking-step">
+      <div class="card">
+        <div class="card-header"><h3>Select Services</h3></div>
+        <div class="card-body">
+          <div id="services-list"></div>
+          <div class="mt-2 text-right">
+            <p class="mb-1"><strong>Estimated Total: <span id="step1-total">&#8377;0</span></strong></p>
+            <button id="to-step-2" class="btn btn-primary" disabled>Next: Pick Date & Time &rarr;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Pick Date & Time -->
+    <div id="step-2" class="booking-step" style="display:none">
+      <div class="card mb-2">
+        <div class="card-header"><h3>Select Date</h3></div>
+        <div class="card-body">
+          <input type="date" id="booking-date" class="form-control" style="max-width:300px">
+          <p id="day-off-msg" class="text-danger mt-1" style="display:none">This salon is closed on this day</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Select Time Slot</h3></div>
+        <div class="card-body">
+          <div id="slots-container">
+            <p class="text-muted">Select a date to see available slots</p>
+          </div>
+          <div class="mt-2">
+            <button id="to-step-1" class="btn btn-outline">&larr; Back</button>
+            <button id="to-step-3" class="btn btn-primary" style="float:right" disabled>Next: Review &rarr;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Review & Confirm -->
+    <div id="step-3" class="booking-step" style="display:none">
+      <div class="card">
+        <div class="card-header"><h3>Review Your Booking</h3></div>
+        <div class="card-body">
+          <div id="booking-summary"></div>
+          <div class="mt-2">
+            <button id="to-step-2-back" class="btn btn-outline">&larr; Back</button>
+            <button id="create-booking-btn" class="btn btn-primary" style="float:right">Create Booking</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Confirmation Timer -->
+    <div id="step-4" class="booking-step" style="display:none">
+      <div class="card">
+        <div class="card-header"><h3>Confirm Your Booking</h3></div>
+        <div class="card-body text-center">
+          <div class="timer-display mb-2">
+            <p>Your booking is held for</p>
+            <div id="countdown-timer" class="countdown">10:00</div>
+            <p class="text-muted">Please confirm before the timer expires</p>
+          </div>
+          <div id="confirm-summary" class="mb-2 text-left"></div>
+          <button id="confirm-booking-btn" class="btn btn-success btn-lg">Confirm Booking</button>
+          <button id="cancel-hold-btn" class="btn btn-outline ml-1">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div id="step-success" class="booking-step" style="display:none">
+      <div class="card text-center">
+        <div class="card-body">
+          <h2 class="text-success">Booking Confirmed!</h2>
+          <p>Your appointment has been booked successfully.</p>
+          <div id="success-details" class="mb-2"></div>
+          <a href="/customer/my-bookings.html" class="btn btn-primary">View My Bookings</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .booking-progress { display:flex; justify-content:center; gap:20px; }
+    .progress-step { display:flex; align-items:center; gap:8px; color:var(--color-muted); }
+    .progress-step.active { color:var(--color-primary); font-weight:600; }
+    .progress-step.done { color:var(--color-success); }
+    .step-number { width:30px; height:30px; border-radius:50%; background:var(--color-light); display:flex; align-items:center; justify-content:center; font-weight:700; }
+    .progress-step.active .step-number { background:var(--color-primary); color:#fff; }
+    .progress-step.done .step-number { background:var(--color-success); color:#fff; }
+    .service-option { display:flex; align-items:center; justify-content:space-between; padding:12px; border:2px solid var(--color-border); border-radius:8px; margin-bottom:8px; cursor:pointer; transition:all 0.2s; }
+    .service-option:hover { border-color:var(--color-primary); }
+    .service-option.selected { border-color:var(--color-primary); background:rgba(108,99,255,0.05); }
+    .service-option input[type="checkbox"] { margin-right:10px; }
+    .countdown { font-size:48px; font-weight:700; color:var(--color-primary); font-family:monospace; }
+    .timer-display { padding:20px; }
+  </style>
+
+  <div id="alerts"></div>
+  <script src="/lib/jquery-3.7.1.min.js"></script>
+  <script>window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"><\/script>')</script>
+  <script src="/js/api.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/booking.js"></script>
+</body>
+</html>

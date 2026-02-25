@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon Details - Salon Booking</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Salon Booking</a>
+      <button class="navbar-toggle" id="navToggle">&#9776;</button>
+      <div class="navbar-links" id="navLinks">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/login.html" class="nav-link nav-auth">Login</a>
+        <a href="/register.html" class="nav-link nav-auth">Register</a>
+        <a href="/owner/dashboard.html" class="nav-link nav-owner" style="display:none">Dashboard</a>
+        <a href="/owner/profile.html" class="nav-link nav-owner" style="display:none">Profile</a>
+        <a href="/owner/bookings.html" class="nav-link nav-owner" style="display:none">Bookings</a>
+        <a href="/customer/dashboard.html" class="nav-link nav-customer" style="display:none">Browse Salons</a>
+        <a href="/customer/my-bookings.html" class="nav-link nav-customer" style="display:none">My Bookings</a>
+        <span class="nav-link nav-user" style="display:none">
+          Hi, <span id="nav-user-name"></span>
+          <a href="#" id="logout-btn" class="nav-link">Logout</a>
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container section">
+    <a href="/customer/dashboard.html" class="btn btn-outline mb-2">&larr; Back to Salons</a>
+
+    <div id="owner-detail">
+      <div class="loading-spinner"></div>
+      <p class="text-center">Loading salon details...</p>
+    </div>
+
+    <!-- Salon Info -->
+    <div id="salon-info" style="display:none">
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <h1 id="salon-name"></h1>
+              <p id="salon-address" class="text-muted"></p>
+              <div class="mb-1">
+                <span id="salon-rating" class="badge badge-success"></span>
+                <span id="salon-reviews" class="text-muted"></span>
+              </div>
+              <p><strong>Hours:</strong> <span id="salon-hours"></span></p>
+              <p><strong>Day Off:</strong> <span id="salon-dayoff"></span></p>
+            </div>
+            <div class="col text-right" style="flex:0;min-width:200px">
+              <a id="book-now-btn" href="#" class="btn btn-primary btn-lg">Book Now</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Services -->
+      <div class="card mb-3">
+        <div class="card-header"><h3>Services Offered</h3></div>
+        <div class="card-body">
+          <div id="services-list"></div>
+        </div>
+      </div>
+
+      <!-- Reviews -->
+      <div class="card mb-3">
+        <div class="card-header"><h3>Reviews</h3></div>
+        <div class="card-body">
+          <div id="reviews-list"></div>
+          <div id="no-reviews" class="empty-state" style="display:none">
+            <p>No reviews yet</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alerts"></div>
+  <script src="/lib/jquery-3.7.1.min.js"></script>
+  <script>window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"><\/script>')</script>
+  <script src="/js/api.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/customer.js"></script>
+</body>
+</html>

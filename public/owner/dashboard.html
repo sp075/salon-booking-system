@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owner Dashboard - Salon Booking</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .dashboard-welcome {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+      color: var(--color-white);
+      padding: 2rem;
+      border-radius: var(--radius-lg);
+      margin-bottom: 1.5rem;
+    }
+    .dashboard-welcome h1 {
+      color: var(--color-white);
+      font-size: 1.8rem;
+      margin-bottom: 0.25rem;
+    }
+    .dashboard-welcome p {
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 0;
+    }
+    .stats-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      flex: 1;
+      min-width: 160px;
+      background: var(--color-white);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      text-align: center;
+    }
+    .stat-card .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      line-height: 1.2;
+    }
+    .stat-card .stat-label {
+      font-size: 0.85rem;
+      color: var(--color-dark-light);
+      margin-top: 0.25rem;
+    }
+    .stat-card.stat-warning .stat-value { color: #856404; }
+    .stat-card.stat-success .stat-value { color: var(--color-success); }
+    .quick-links {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .quick-links .btn {
+      flex: 1;
+      min-width: 140px;
+    }
+    .booking-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--color-border);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .booking-row:last-child {
+      border-bottom: none;
+    }
+    .booking-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .booking-info .customer-name {
+      font-weight: 600;
+      color: var(--color-dark);
+    }
+    .booking-info .booking-detail {
+      font-size: 0.85rem;
+      color: var(--color-dark-light);
+    }
+    @media (max-width: 768px) {
+      .dashboard-welcome h1 { font-size: 1.4rem; }
+      .stats-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Salon Booking</a>
+      <button class="navbar-toggle" id="navToggle">&#9776;</button>
+      <div class="navbar-links" id="navLinks">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/login.html" class="nav-link nav-auth">Login</a>
+        <a href="/register.html" class="nav-link nav-auth">Register</a>
+        <a href="/owner/dashboard.html" class="nav-link nav-owner" style="display:none">Dashboard</a>
+        <a href="/owner/profile.html" class="nav-link nav-owner" style="display:none">Profile</a>
+        <a href="/owner/bookings.html" class="nav-link nav-owner" style="display:none">Bookings</a>
+        <a href="/customer/dashboard.html" class="nav-link nav-customer" style="display:none">Browse Salons</a>
+        <a href="/customer/my-bookings.html" class="nav-link nav-customer" style="display:none">My Bookings</a>
+        <span class="nav-link nav-user" style="display:none">
+          Hi, <span id="nav-user-name"></span>
+          <a href="#" id="logout-btn" class="nav-link">Logout</a>
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top:1.5rem;">
+    <div class="dashboard-welcome" id="welcome-section">
+      <h1>Welcome back!</h1>
+      <p>Loading your dashboard...</p>
+    </div>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-today">--</div>
+        <div class="stat-label">Bookings Today</div>
+      </div>
+      <div class="stat-card stat-warning">
+        <div class="stat-value" id="stat-pending">--</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-card stat-success">
+        <div class="stat-value" id="stat-rating">--</div>
+        <div class="stat-label">Rating</div>
+      </div>
+    </div>
+
+    <div class="quick-links">
+      <a href="/owner/profile.html" class="btn btn-primary">Manage Profile</a>
+      <a href="/owner/bookings.html" class="btn btn-outline">View Bookings</a>
+      <a href="/owner/profile.html#services" class="btn btn-outline">Manage Services</a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Recent Bookings</div>
+      <div class="card-body" id="recent-bookings">
+        <div class="loading-spinner-container">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">Loading...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alerts"></div>
+  <script src="/lib/jquery-3.7.1.min.js"></script>
+  <script>window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"><\/script>')</script>
+  <script src="/js/api.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/owner.js"></script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Salon Booking</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .role-selector {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.35rem;
+    }
+    .role-option {
+      flex: 1;
+      position: relative;
+    }
+    .role-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .role-option label {
+      display: block;
+      text-align: center;
+      padding: 0.65rem 1rem;
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .role-option input[type="radio"]:checked + label {
+      border-color: var(--color-primary);
+      background-color: rgba(108, 99, 255, 0.08);
+      color: var(--color-primary);
+    }
+    .role-option label:hover {
+      border-color: var(--color-primary-light);
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Salon Booking</a>
+      <button class="navbar-toggle" id="navToggle">&#9776;</button>
+      <div class="navbar-links" id="navLinks">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/login.html" class="nav-link nav-auth">Login</a>
+        <a href="/register.html" class="nav-link nav-auth">Register</a>
+        <a href="/owner/dashboard.html" class="nav-link nav-owner" style="display:none">Dashboard</a>
+        <a href="/owner/profile.html" class="nav-link nav-owner" style="display:none">Profile</a>
+        <a href="/owner/bookings.html" class="nav-link nav-owner" style="display:none">Bookings</a>
+        <a href="/customer/dashboard.html" class="nav-link nav-customer" style="display:none">Browse Salons</a>
+        <a href="/customer/my-bookings.html" class="nav-link nav-customer" style="display:none">My Bookings</a>
+        <span class="nav-link nav-user" style="display:none">
+          Hi, <span id="nav-user-name"></span>
+          <a href="#" id="logout-btn" class="nav-link">Logout</a>
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <h2>Create Account</h2>
+      <p class="auth-subtitle">Join Salon Booking today</p>
+      <form id="register-form">
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group">
+              <label for="firstName">First Name</label>
+              <input type="text" id="firstName" class="form-control" placeholder="First name" required>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <input type="text" id="lastName" class="form-control" placeholder="Last name" required>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label for="mobile">Mobile</label>
+          <input type="tel" id="mobile" class="form-control" placeholder="Enter your mobile number" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Create a password" required>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
+        </div>
+        <div class="form-group">
+          <label>I am a</label>
+          <div class="role-selector">
+            <div class="role-option">
+              <input type="radio" name="role" id="role-customer" value="customer" checked>
+              <label for="role-customer">Customer</label>
+            </div>
+            <div class="role-option">
+              <input type="radio" name="role" id="role-owner" value="owner">
+              <label for="role-owner">Salon Owner</label>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="register-btn">Register</button>
+      </form>
+      <p class="text-center mt-2">
+        Already have an account? <a href="/login.html">Login</a>
+      </p>
+    </div>
+  </div>
+
+  <div id="alerts"></div>
+  <script src="/lib/jquery-3.7.1.min.js"></script>
+  <script>window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"><\/script>')</script>
+  <script src="/js/api.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    $(function () {
+      // Mobile nav toggle
+      $('#navToggle').on('click', function () {
+        $('#navLinks').toggleClass('open');
+      });
+
+      // Check auth - if already logged in, redirect to dashboard
+      Auth.checkAuth().then(function (user) {
+        Auth.updateNavbar();
+        if (user) {
+          window.location.href = user.role === 'owner'
+            ? '/owner/dashboard.html'
+            : '/customer/dashboard.html';
+        }
+      });
+
+      // Logout handler
+      $(document).on('click', '#logout-btn', function (e) {
+        e.preventDefault();
+        Auth.logout();
+      });
+
+      // Register form submit
+      $('#register-form').on('submit', function (e) {
+        e.preventDefault();
+
+        var firstName = $('#firstName').val().trim();
+        var lastName = $('#lastName').val().trim();
+        var email = $('#email').val().trim();
+        var mobile = $('#mobile').val().trim();
+        var password = $('#password').val();
+        var confirmPassword = $('#confirmPassword').val();
+        var role = $('input[name="role"]:checked').val();
+
+        // Validation
+        if (!firstName || !lastName || !email || !mobile || !password || !confirmPassword) {
+          showAlert('Please fill in all fields.', 'warning');
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          showAlert('Passwords do not match.', 'danger');
+          return;
+        }
+
+        if (password.length < 6) {
+          showAlert('Password must be at least 6 characters long.', 'danger');
+          return;
+        }
+
+        var $btn = $('#register-btn');
+        $btn.prop('disabled', true).text('Creating account...');
+
+        API.post('/auth/register', {
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          mobile: mobile,
+          password: password,
+          role: role
+        })
+          .then(function (res) {
+            var user = res.data;
+            window.location.href = user.role === 'owner'
+              ? '/owner/dashboard.html'
+              : '/customer/dashboard.html';
+          })
+          .catch(function (xhr) {
+            var msg = (xhr.responseJSON && xhr.responseJSON.message)
+              ? xhr.responseJSON.message
+              : 'Registration failed. Please try again.';
+            showAlert(msg, 'danger');
+          })
+          .always(function () {
+            $btn.prop('disabled', false).text('Register');
+          });
+      });
+    });
+  </script>
+</body>
+</html>

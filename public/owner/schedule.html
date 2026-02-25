@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule Management - Salon Booking</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .schedule-display {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .schedule-item {
+      flex: 1;
+      min-width: 160px;
+      background: var(--color-white);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      text-align: center;
+    }
+    .schedule-item .schedule-label {
+      font-size: 0.85rem;
+      color: var(--color-dark-light);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.35rem;
+    }
+    .schedule-item .schedule-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+    @media (max-width: 768px) {
+      .schedule-display { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Salon Booking</a>
+      <button class="navbar-toggle" id="navToggle">&#9776;</button>
+      <div class="navbar-links" id="navLinks">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/login.html" class="nav-link nav-auth">Login</a>
+        <a href="/register.html" class="nav-link nav-auth">Register</a>
+        <a href="/owner/dashboard.html" class="nav-link nav-owner" style="display:none">Dashboard</a>
+        <a href="/owner/profile.html" class="nav-link nav-owner" style="display:none">Profile</a>
+        <a href="/owner/bookings.html" class="nav-link nav-owner" style="display:none">Bookings</a>
+        <a href="/customer/dashboard.html" class="nav-link nav-customer" style="display:none">Browse Salons</a>
+        <a href="/customer/my-bookings.html" class="nav-link nav-customer" style="display:none">My Bookings</a>
+        <span class="nav-link nav-user" style="display:none">
+          Hi, <span id="nav-user-name"></span>
+          <a href="#" id="logout-btn" class="nav-link">Logout</a>
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top:1.5rem;">
+    <div class="page-header">
+      <h1>Schedule Management</h1>
+      <p>View and update your salon operating hours</p>
+    </div>
+
+    <!-- Current Schedule Display -->
+    <div class="schedule-display" id="schedule-display">
+      <div class="schedule-item">
+        <div class="schedule-label">Opens At</div>
+        <div class="schedule-value" id="display-open-time">--:--</div>
+      </div>
+      <div class="schedule-item">
+        <div class="schedule-label">Closes At</div>
+        <div class="schedule-value" id="display-close-time">--:--</div>
+      </div>
+      <div class="schedule-item">
+        <div class="schedule-label">Weekly Day Off</div>
+        <div class="schedule-value" id="display-day-off">--</div>
+      </div>
+    </div>
+
+    <!-- Update Schedule Form -->
+    <div class="card">
+      <div class="card-header">Update Schedule</div>
+      <div class="card-body">
+        <form id="schedule-form">
+          <div class="row">
+            <div class="col-4">
+              <div class="form-group">
+                <label for="openTime">Open Time</label>
+                <input type="time" id="openTime" class="form-control" required>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label for="closeTime">Close Time</label>
+                <input type="time" id="closeTime" class="form-control" required>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label for="dayOff">Weekly Day Off</label>
+                <select id="dayOff" class="form-control">
+                  <option value="">No day off</option>
+                  <option value="0">Sunday</option>
+                  <option value="1">Monday</option>
+                  <option value="2">Tuesday</option>
+                  <option value="3">Wednesday</option>
+                  <option value="4">Thursday</option>
+                  <option value="5">Friday</option>
+                  <option value="6">Saturday</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" id="save-schedule-btn">Save Schedule</button>
+        </form>
+      </div>
+    </div>
+
+    <p class="text-muted mt-2">
+      You can also manage your schedule from the <a href="/owner/profile.html">Profile</a> page.
+    </p>
+  </div>
+
+  <div id="alerts"></div>
+  <script src="/lib/jquery-3.7.1.min.js"></script>
+  <script>window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"><\/script>')</script>
+  <script src="/js/api.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/owner.js"></script>
+</body>
+</html>
