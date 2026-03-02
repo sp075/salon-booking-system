@@ -19,7 +19,7 @@
 
 | Service             | Methods                                                      |
 |---------------------|--------------------------------------------------------------|
-| authService         | `register()`, `login()`, `getUserById()`                     |
+| authService         | `register()`, `login()`, `getUserById()`, `resetPassword()`  |
 | ownerService        | `getProfile()`, `updateProfile()`, `updateSchedule()`, `getServices()`, `addService()`, `removeService()`, `getBookings()`, `confirmBooking()`, `rejectBooking()` |
 | slotService         | `generateAllSlots()`, `excludeLunchSlots()`, `getBookedSlots()`, `getAvailableSlots()`, `validateBookingSlots()` |
 | bookingService      | `createBooking()`, `confirmBooking()`, `cancelBooking()`, `getCustomerBookings()`, `getBookingById()` |
@@ -30,7 +30,7 @@
 
 | Controller          | Methods                                                      |
 |---------------------|--------------------------------------------------------------|
-| authController      | `register()`, `login()`, `logout()`, `me()`                 |
+| authController      | `register()`, `login()`, `logout()`, `me()`, `resetPassword()` |
 | ownerController     | `getProfile()`, `updateProfile()`, `updateSchedule()`, `getServices()`, `addService()`, `removeService()`, `getBookings()`, `confirmBooking()`, `rejectBooking()` |
 | customerController  | `browseOwners()`, `getOwnerDetail()`, `getAvailableSlots()` |
 | bookingController   | `createBooking()`, `confirmBooking()`, `cancelBooking()`, `getMyBookings()`, `submitReview()` |
@@ -40,7 +40,7 @@
 | Middleware            | Purpose                                                    |
 |-----------------------|------------------------------------------------------------|
 | authMiddleware        | `isAuthenticated()` checks session; `isRole(role)` checks role |
-| validationMiddleware  | `validateRegistration()`, `validateLogin()`, `validateBooking()`, `validateReview()` |
+| validationMiddleware  | `validateRegistration()`, `validateLogin()`, `validateBooking()`, `validateReview()`, `validatePasswordReset()` |
 | errorHandler          | Global error handler; maps `err.statusCode` to HTTP response |
 
 ### 1.5 Jobs (`src/jobs/`)
@@ -107,12 +107,13 @@ MARK COMPLETED (cron every 15 min):
 
 ### 3.1 Authentication (`/api/auth`)
 
-| Method | Endpoint          | Auth | Body/Params                                       | Response     |
-|--------|-------------------|------|---------------------------------------------------|--------------|
-| POST   | `/auth/register`  | No   | `{ email, mobile, password, firstName, lastName, role }` | 201 User     |
-| POST   | `/auth/login`     | No   | `{ email, password }`                             | 200 User     |
-| POST   | `/auth/logout`    | Yes  | --                                                | 200 message  |
-| GET    | `/auth/me`        | Yes  | --                                                | 200 User     |
+| Method | Endpoint                  | Auth | Body/Params                                       | Response     |
+|--------|---------------------------|------|---------------------------------------------------|--------------|
+| POST   | `/auth/register`          | No   | `{ email, mobile, password, firstName, lastName, role }` | 201 User     |
+| POST   | `/auth/login`             | No   | `{ email, password }`                             | 200 User     |
+| POST   | `/auth/logout`            | Yes  | --                                                | 200 message  |
+| GET    | `/auth/me`                | Yes  | --                                                | 200 User     |
+| POST   | `/auth/reset-password`    | No   | `{ email, last4digits, newPassword, confirmPassword }` | 200 message  |
 
 ### 3.2 Owner (`/api/owner`) -- requires `owner` role
 
