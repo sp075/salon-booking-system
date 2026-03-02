@@ -70,7 +70,7 @@ JavaScript (not classes), each "class" below represents a module export.
 |  | register(data)       |     | getProfile(userId)   |                    |
 |  | login(credentials)   |     | updateProfile(       |                    |
 |  | getUserById(id)      |     |   userId, data)      |                    |
-|  +---------------------+     | updateSchedule(      |                    |
+|  | resetPassword(data)  |     | updateSchedule(      |                    |
 |                               |   userId, data)      |                    |
 |  +---------------------+     | getServices(         |                    |
 |  |    slotService       |     |   ownerProfileId)    |                    |
@@ -121,7 +121,9 @@ JavaScript (not classes), each "class" below represents a module export.
 |  | login(req, res)      |     | updateProfile(...)   |                    |
 |  | logout(req, res)     |     | updateSchedule(...)  |                    |
 |  | me(req, res)         |     | getServices(...)     |                    |
-|  +---------------------+     | addService(...)      |                    |
+|  | resetPassword(       |     | addService(...)      |                    |
+|  |   req, res)          |     |                      |                    |
+|  +---------------------+     |                      |                    |
 |                               | removeService(...)   |                    |
 |  +---------------------+     | getBookings(...)     |                    |
 |  | customerController   |     | confirmBooking(...)  |                    |
@@ -150,7 +152,8 @@ JavaScript (not classes), each "class" below represents a module export.
 |  |   req, res, next)    |   | validateLogin        |  |  err, req, res,  | |
 |  | isRole(role) ->      |   | validateBooking      |  |  next)           | |
 |  |   middleware          |   | validateReview       |  +------------------+ |
-|  +---------------------+   +----------------------+                      |
+|  +---------------------+   | validatePasswordReset|                      |
+|                             +----------------------+                      |
 |                                                                           |
 |  +---------------------+   +----------------------+  +------------------+ |
 |  |     logger           |   |     timeUtils        |  |   validators     | |
@@ -202,7 +205,8 @@ Middleware     Notification
 
 ## Key Relationships
 
-1. **authController** depends on **authService**
+1. **authController** depends on **authService** (including `resetPassword`)
+   - `resetPassword` also triggers **notificationService** (confirmation email) via authService
 2. **ownerController** depends on **ownerService** and **notificationService**
 3. **customerController** depends on **slotService** (for available slots)
 4. **bookingController** depends on **bookingService**, **reviewService**, and **notificationService**

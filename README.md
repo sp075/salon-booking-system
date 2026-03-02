@@ -24,6 +24,7 @@ time slots, and leave reviews -- all through an intuitive browser-based interfac
 
 ### System Features
 - Session-based authentication with role-based access control
+- Password reset via email + last 4 digits of registered phone number
 - Automatic slot generation with lunch break exclusion
 - Booking hold mechanism with timeout (10 minutes)
 - Cron jobs for: abandoned slot release, auto-confirm, mark completed
@@ -130,7 +131,8 @@ saloon-booking-system/
 │   ├── owner/                # Owner HTML pages
 │   ├── index.html            # Landing page
 │   ├── login.html            # Login page
-│   └── register.html         # Registration page
+│   ├── register.html         # Registration page
+│   └── reset-password.html   # Password reset page
 ├── scripts/
 │   ├── create-db.sql         # Database creation SQL
 │   ├── setup-windows.bat     # Windows setup script
@@ -171,12 +173,13 @@ saloon-booking-system/
 ## API Endpoints Summary
 
 ### Authentication (`/api/auth`)
-| Method | Endpoint    | Description           |
-|--------|-------------|-----------------------|
-| POST   | /register   | Register a new user   |
-| POST   | /login      | Log in                |
-| POST   | /logout     | Log out               |
-| GET    | /me         | Get current user info |
+| Method | Endpoint         | Description                             |
+|--------|------------------|-----------------------------------------|
+| POST   | /register        | Register a new user                     |
+| POST   | /login           | Log in                                  |
+| POST   | /logout          | Log out                                 |
+| GET    | /me              | Get current user info                   |
+| POST   | /reset-password  | Reset password (email + last 4 of phone)|
 
 ### Owner (`/api/owner`) -- requires owner role
 | Method | Endpoint                 | Description              |

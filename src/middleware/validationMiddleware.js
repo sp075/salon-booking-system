@@ -84,9 +84,36 @@ function validateReview(req, res, next) {
   next();
 }
 
+function validatePasswordReset(req, res, next) {
+  const { email, last4digits, newPassword, confirmPassword } = req.body;
+
+  if (!email || !isValidEmail(email)) {
+    return res.status(400).json({ success: false, message: 'A valid email is required.' });
+  }
+
+  if (!last4digits || typeof last4digits !== 'string' || !/^\d{4}$/.test(last4digits.trim())) {
+    return res.status(400).json({ success: false, message: 'Last 4 digits of phone number must be exactly 4 digits.' });
+  }
+
+  if (!newPassword || !isValidPassword(newPassword)) {
+    return res.status(400).json({
+      success: false,
+      message:
+        'Password must be at least 8 characters with at least 1 uppercase letter, 1 lowercase letter, 1 digit, and 1 special character.',
+    });
+  }
+
+  if (!confirmPassword || newPassword !== confirmPassword) {
+    return res.status(400).json({ success: false, message: 'New password and confirm password do not match.' });
+  }
+
+  next();
+}
+
 module.exports = {
   validateRegistration,
   validateLogin,
   validateBooking,
   validateReview,
+  validatePasswordReset,
 };

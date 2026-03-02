@@ -107,7 +107,7 @@ The system follows a classic **3-Tier Architecture** separating presentation, ap
 flowchart TB
     subgraph Tier1["Tier 1 — Presentation (Browser)"]
         direction LR
-        AuthPages["Auth Pages\nlogin · register · index"]
+        AuthPages["Auth Pages\nlogin · register · reset-password · index"]
         OwnerPages["Owner Pages\ndashboard · profile · schedule · bookings"]
         CustomerPages["Customer Pages\ndashboard · owner-detail · booking · my-bookings · review"]
         SharedJS["Shared JS Modules\napi.js · auth.js · utils.js · jQuery 3.7.1"]
@@ -194,7 +194,7 @@ saloon-booking-system/
 │   ├── jobs/                 ← scheduler.js, releaseAbandonedSlots.js, autoConfirmBookings.js
 │   └── utils/                ← logger.js, timeUtils.js, validators.js
 ├── public/
-│   ├── index.html, login.html, register.html
+│   ├── index.html, login.html, register.html, reset-password.html
 │   ├── owner/                ← dashboard, profile, schedule, bookings pages
 │   ├── customer/             ← dashboard, owner-detail, booking, my-bookings, review pages
 │   ├── css/                  ← style.css, calendar.css
@@ -495,7 +495,7 @@ flowchart TB
     Cron(["Cron Scheduler"])
 
     subgraph Processes["System Processes"]
-        P1["P1 Authentication\nregister · login · logout"]
+        P1["P1 Authentication\nregister · login · logout · reset-password"]
         P2["P2 Salon Management\nprofile · schedule · services"]
         P3["P3 Browse & Discover\nlist owners · details · get slots"]
         P4["P4 Booking Engine\ncreate → hold → confirm / cancel"]
@@ -556,6 +556,7 @@ flowchart LR
 
     subgraph System["Salon Booking System"]
         UC_AUTH["Register / Login / Logout"]
+        UC_RESET["Reset Password\nemail + last 4 of phone"]
         UC_PROFILE["Update Salon Profile\nname · address"]
         UC_SCHEDULE["Set Operating Schedule\nopen time · close time · day off"]
         UC_SERVICES["Manage Services\nenable / disable · set custom price"]
@@ -565,6 +566,7 @@ flowchart LR
     end
 
     Owner --> UC_AUTH
+    Owner --> UC_RESET
     Owner --> UC_PROFILE
     Owner --> UC_SCHEDULE
     Owner --> UC_SERVICES
@@ -581,6 +583,7 @@ flowchart LR
 
     subgraph System["Salon Booking System"]
         UC_AUTH["Register / Login / Logout"]
+        UC_RESET["Reset Password\nemail + last 4 of phone"]
         UC_BROWSE["Browse Salons\nsearch by name · filter by service"]
         UC_DETAIL["View Salon Details\nservices · rating · reviews"]
         UC_SLOTS["Check Available Slots\nselect date and services"]
@@ -592,6 +595,7 @@ flowchart LR
     end
 
     Customer --> UC_AUTH
+    Customer --> UC_RESET
     Customer --> UC_BROWSE
     Customer --> UC_DETAIL
     Customer --> UC_SLOTS
@@ -717,6 +721,7 @@ classDiagram
         +register(data) User
         +login(credentials) User
         +getUserById(id) User
+        +resetPassword(data) void
     }
     class ownerService {
         +getProfile(userId) OwnerProfile
@@ -769,6 +774,7 @@ classDiagram
         +login(req, res, next)
         +logout(req, res, next)
         +me(req, res, next)
+        +resetPassword(req, res, next)
     }
     class ownerController {
         +getProfile(req, res, next)
@@ -802,12 +808,14 @@ classDiagram
         +validateLogin(req, res, next)
         +validateBooking(req, res, next)
         +validateReview(req, res, next)
+        +validatePasswordReset(req, res, next)
     }
     class errorHandler {
         +errorHandler(err, req, res, next)
     }
 
     authController    --> authService
+    authController    --> notificationService : via authService.resetPassword
     ownerController   --> ownerService
     ownerController   --> notificationService
     customerController --> slotService
@@ -930,6 +938,58 @@ sequenceDiagram
     end
 ```
 
+#### 2.8.4 Password Reset Sequence
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Browser
+    participant API as Express API
+    participant AuthSvc as authService
+    participant NotifSvc as notificationService
+    participant DB as PostgreSQL
+
+    User    ->> Browser: Click "Forgot Password?" on login page
+    Browser -->> User: Load /reset-password.html
+
+    User    ->> Browser: Fill form (email, last 4 digits, new password, confirm)
+    Browser ->> Browser: Client-side validation\n(format · 4 digits · strength · match)
+
+    alt Validation fails
+        Browser -->> User: Show inline field errors
+    else Validation passes
+        Browser ->> API: POST /api/auth/reset-password\n{ email, last4digits, newPassword, confirmPassword }
+        API     ->> API: validatePasswordReset middleware\n(server-side re-validation)
+
+        alt Middleware validation fails
+            API -->> Browser: 400 { success: false, message }
+            Browser -->> User: showAlert with error message
+        else Validation passes
+            API     ->> AuthSvc: resetPassword({ email, last4digits, newPassword })
+            AuthSvc ->> DB: SELECT * FROM users WHERE email = ?
+            DB     -->> AuthSvc: User record (or null)
+
+            alt Email not found OR last 4 digits mismatch
+                AuthSvc -->> API: throw 404 (generic message)
+                API     -->> Browser: 404 { success: false, message }
+                Browser -->> User: showAlert — "No account found..."
+            else Identity verified
+                AuthSvc ->> AuthSvc: bcrypt.hash(newPassword, 10)
+                AuthSvc ->> DB: UPDATE users SET password = ? WHERE id = ?
+                DB     -->> AuthSvc: Updated row
+
+                AuthSvc ->> NotifSvc: sendEmail(userId, email,\n"Password Reset Successful", body)
+                NotifSvc ->> DB: INSERT INTO notifications (...)
+                NotifSvc ->> NotifSvc: Append to logs/notifications.log
+
+                AuthSvc -->> API: { id, email, firstName, lastName }
+                API     -->> Browser: 200 { success: true, message }
+                Browser -->> User: Hide form · Show success panel\n"Go to Login" button
+            end
+        end
+    end
+```
+
 ---
 
 ### 2.9 Activity Diagrams
@@ -1006,6 +1066,39 @@ flowchart TD
     CheckStatus -- rejected --> ViewOnly
 
     Reload --> End([End])
+```
+
+#### 2.9.3 Password Reset Workflow
+
+```mermaid
+flowchart TD
+    Start([Start]) --> ForgotLink[User clicks "Forgot Password?"\non login page]
+    ForgotLink --> LoadForm[Load /reset-password.html]
+    LoadForm --> FillForm[User fills form:\nEmail · Last 4 digits of phone\nNew Password · Confirm Password]
+
+    FillForm --> ClientValidate{Client-side\nvalidation passes?}
+    ClientValidate -- No --> ShowFieldErrors[Show inline field errors]
+    ShowFieldErrors --> FillForm
+
+    ClientValidate -- Yes --> CallAPI[POST /api/auth/reset-password]
+    CallAPI --> ServerValidate{Server-side\nvalidation passes?}
+    ServerValidate -- No --> ShowAlert[showAlert with error message]
+    ShowAlert --> FillForm
+
+    ServerValidate -- Yes --> LookupUser[authService:\nSELECT user WHERE email = ?]
+    LookupUser --> UserExists{User found?}
+    UserExists -- No --> GenericError[Return generic 404\n'No account found...']
+    GenericError --> ShowAlert
+
+    UserExists -- Yes --> CheckPhone{Last 4 digits\nmatch stored mobile?}
+    CheckPhone -- No --> GenericError
+
+    CheckPhone -- Yes --> HashPassword[bcrypt.hash new password]
+    HashPassword --> UpdateDB[UPDATE users SET password]
+    UpdateDB --> SendNotif[notificationService.sendEmail\nlog to DB + file]
+    SendNotif --> ShowSuccess[Hide form\nShow success panel]
+    ShowSuccess --> GoLogin[User clicks "Go to Login"]
+    GoLogin --> End([End])
 ```
 
 ---
@@ -1098,7 +1191,7 @@ sequenceDiagram
 | Restrict database access | PostgreSQL should only accept connections from `localhost` |
 | Log rotation | Configure `logrotate` for `logs/notifications.log` |
 | Dependency audit | Run `npm audit` periodically; update dependencies |
-| Rate limiting | Add `express-rate-limit` middleware on auth endpoints |
+| Rate limiting | Add `express-rate-limit` middleware on auth endpoints (including `/reset-password`) |
 
 ---
 
@@ -1183,6 +1276,7 @@ The Salon Booking System delivers a complete, self-contained appointment managem
 - **Real-time, conflict-free slot availability** through a deterministic slot engine that accounts for operating hours, lunch exclusion, existing bookings, and consecutive multi-service windows.
 - **Race-condition safety** via a transactional 10-minute hold mechanism enforced by both client-side timers and server-side cron cleanup.
 - **Secure, role-based access** using server-persisted sessions with HTTP-only cookies and a clear owner/customer separation enforced at the middleware layer.
+- **Self-service password reset** via a two-factor identity check (email + last 4 digits of registered mobile) with enumeration-safe generic error responses and immediate confirmation email notification.
 - **Complete audit trail** — every booking state transition, notification event, and review is stored in PostgreSQL and queryable.
 - **Maintainable architecture** — the layered structure (routes → controllers → services → models) and zero-build-step frontend allow incremental enhancement without specialist tooling.
 
@@ -1271,6 +1365,7 @@ The Salon Booking System delivers a complete, self-contained appointment managem
 | POST | `/login` | No | `{ email, password }` | 200 User object |
 | POST | `/logout` | Yes | — | 200 message |
 | GET | `/me` | Yes | — | 200 User with profile |
+| POST | `/reset-password` | No | `{ email, last4digits, newPassword, confirmPassword }` | 200 message |
 
 #### Owner (`/api/owner`) — Requires role: `owner`
 

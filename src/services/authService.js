@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { User, OwnerProfile } = require('../models');
+const notificationService = require('./notificationService');
 
 const SALT_ROUNDS = 10;
 
@@ -81,4 +82,33 @@ async function getUserById(id) {
   return user;
 }
 
-module.exports = { register, login, getUserById };
+async function resetPassword({ email, last4digits, newPassword }) {
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    const error = new Error('No account found with that email and phone number combination.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const storedLast4 = user.mobile.slice(-4);
+  if (storedLast4 !== last4digits.trim()) {
+    const error = new Error('No account found with that email and phone number combination.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+  await user.update({ password: hashedPassword });
+
+  await notificationService.sendEmail(
+    user.id,
+    user.email,
+    'Password Reset Successful',
+    `Hello ${user.firstName}, your password for your Salon Booking account has been successfully reset. ` +
+      `If you did not request this change, please contact support immediately.`
+  );
+
+  return { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName };
+}
+
+module.exports = { register, login, getUserById, resetPassword };

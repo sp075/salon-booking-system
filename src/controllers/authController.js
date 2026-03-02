@@ -43,4 +43,13 @@ async function me(req, res, next) {
   }
 }
 
-module.exports = { register, login, logout, me };
+async function resetPassword(req, res, next) {
+  try {
+    await authService.resetPassword(req.body);
+    res.json({ success: true, message: 'Password reset successfully. You can now log in with your new password.' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { register, login, logout, me, resetPassword };

@@ -67,7 +67,7 @@ and leave reviews. The system follows a **3-tier architecture**:
 
 | Component       | Responsibility                                          |
 |-----------------|---------------------------------------------------------|
-| **Auth**        | User registration, login, logout, session management    |
+| **Auth**        | User registration, login, logout, session management, password reset |
 | **Owner**       | Profile management, schedule, services, booking actions |
 | **Customer**    | Browse salons, view details, query available slots      |
 | **Booking**     | Create bookings with hold, confirm, cancel, review      |
@@ -120,3 +120,13 @@ and leave reviews. The system follows a **3-tier architecture**:
 ### 5.5 Review Flow
 1. After a booking is marked `completed`, customer can submit a review.
 2. Review is created; owner's `avg_rating` and `total_reviews` are recalculated via SQL.
+
+### 5.6 Password Reset Flow
+1. User navigates to `/reset-password.html` via the "Forgot Password?" link on the login page.
+2. User submits their registered email, the last 4 digits of their mobile number, a new password, and a confirmation of the new password.
+3. Client-side validation runs first (format, digit-only, password strength, match).
+4. `POST /api/auth/reset-password` is called; `validatePasswordReset` middleware re-validates all fields server-side.
+5. `authService.resetPassword()` looks up the user by email, verifies the last 4 digits of the stored mobile number, and raises a generic 404 if either check fails (prevents user enumeration).
+6. On success, the password is bcrypt-hashed and the `users` record is updated.
+7. A confirmation email notification is logged via `notificationService` (DB + file).
+8. The form is replaced with a success panel; the user is redirected to the login page.
