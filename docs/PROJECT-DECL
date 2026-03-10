@@ -1,0 +1,379 @@
+# Salon Booking System — 8-Slide Presentation
+
+---
+
+## Slide 1: Project Overview
+
+**Title:** Salon Booking System — Full-Stack Web Application
+
+**Tagline:** *Bridging salon owners and customers through seamless digital appointment management.*
+
+**Problem Statement:**
+
+- 📌 Manual salon scheduling is error-prone and time-consuming
+- 📌 No real-time slot visibility for customers
+- 📌 Owners lack tooling to manage bookings, services & notifications centrally
+
+**Solution:**
+
+- ✅ Browser-based platform for two distinct user roles
+- ✅ Real-time slot availability with a 10-minute booking hold
+- ✅ Automated cron-driven lifecycle management of appointments
+
+**Demo Credentials:**
+
+| Role | Email | Password |
+|---|---|---|
+| Owner | <owner@salon.com> | Owner@123 |
+| Customer | <customer@example.com> | Customer@123 |
+
+---
+
+## Slide 2: Key Features & User Flows
+
+**Title:** What Can Users Do?
+
+| Salon Owner | Customer |
+|---|---|
+| Register & configure salon profile | Browse & search all salons |
+| Set working hours, day off & lunch break | View services, ratings & reviews |
+| Add / remove services with pricing | Check live available time slots |
+| Confirm / reject incoming bookings | Book one or more consecutive slots |
+| Receive email/SMS notifications | Confirm booking within 10-min hold |
+| View full booking history | Cancel bookings & submit reviews |
+
+**System Automation (Cron Jobs):**
+
+```
+┌───────────────────────────────────────────────────────────┐
+│  releaseAbandonedSlots  →  free slots after 10-min hold   │
+│  autoConfirmBookings    →  auto-confirm eligible bookings  │
+│  markCompleted          →  close past appointments        │
+└───────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Slide 3: High-Level Architecture (HLD)
+
+**Title:** System Architecture — Birds Eye View
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                     Client Layer                         │
+│        Browser: HTML5 · CSS3 · jQuery 3.7 · JS          │
+│   ┌─────────────────┐        ┌──────────────────────┐   │
+│   │  Owner Pages    │        │   Customer Pages     │   │
+│   │  (Dashboard,    │        │   (Browse, Book,     │   │
+│   │  Services,      │        │    Reviews,          │   │
+│   │  Bookings)      │        │    My Bookings)      │   │
+│   └────────┬────────┘        └───────────┬──────────┘   │
+└────────────┼──────────────────────────── ┼──────────────┘
+             │         HTTPS/REST          │
+┌────────────▼─────────────────────────────▼──────────────┐
+│                  Application Layer                       │
+│              Node.js + Express.js 4                      │
+│  ┌──────────┐ ┌────────────┐ ┌──────────┐ ┌─────────┐  │
+│  │  Routes  │→│Controllers │→│ Services │→│ Models  │  │
+│  └──────────┘ └────────────┘ └──────────┘ └────┬────┘  │
+│  ┌──────────────────────────────────────────────┤       │
+│  │  Middleware: Auth · Validation · ErrorHandler│       │
+│  └──────────────────────────────────────────────┘       │
+│  ┌──────────────────────────────────────────────┐       │
+│  │  Cron Jobs: node-cron scheduler               │       │
+│  └──────────────────────────────────────────────┘       │
+└─────────────────────────────────────────┬───────────────┘
+                                          │ Sequelize ORM
+┌─────────────────────────────────────────▼───────────────┐
+│                   Data Layer                             │
+│              PostgreSQL 14+                              │
+│        8 Tables · Migrations · Seeders                  │
+└──────────────────────────────────────────────────────────┘
+          │                          │
+  ┌───────▼──────┐           ┌───────▼──────┐
+  │  Log Files   │           │  Session     │
+  │  (logs/)     │           │  Store (DB)  │
+  └──────────────┘           └──────────────┘
+```
+
+**Design Principles:**
+
+- 🔁 Layered separation: Routes → Controllers → Services → Models
+- 🔐 Role-based access control (Owner vs Customer)
+- 📣 Decoupled notification service (swap logs → real SMTP/SMS anytime)
+
+---
+
+## Slide 4: Low-Level Design — Module Breakdown
+
+**Title:** Component Design & Responsibilities
+
+```
+src/
+├── controllers/          ← HTTP request/response handling only
+│   ├── authController       register, login, logout, reset
+│   ├── ownerController      profile, schedule, services
+│   ├── customerController   browse, slots, reviews
+│   └── bookingController    create, confirm, cancel, reject
+│
+├── services/             ← All business logic lives here
+│   ├── authService          credential validation, bcrypt
+│   ├── slotService          slot generation + lunch exclusion
+│   ├── bookingService       hold mechanism, state machine
+│   ├── ownerService         salon & schedule management
+│   ├── reviewService        rating aggregation
+│   └── notificationService  email/SMS abstraction layer
+│
+├── models/               ← Sequelize ORM definitions
+│   └── User, Salon, Service, SalonService,
+│       Slot, Booking, Review, Notification
+│
+├── middleware/           ← Cross-cutting concerns
+│   ├── authMiddleware       session checks + role guards
+│   ├── validationMiddleware joi/express-validator rules
+│   └── errorHandler         centralised error responses
+│
+└── jobs/                 ← Scheduled automation
+    ├── releaseAbandonedSlots.js
+    ├── autoConfirmBookings.js
+    └── scheduler.js
+```
+
+**Booking State Machine:**
+
+```
+  PENDING ──(customer confirms)──► CONFIRMED
+     │                                 │
+     │(owner rejects / timeout)        │(service done)
+     ▼                                 ▼
+  REJECTED                         COMPLETED
+     │
+     │(customer cancels)
+     ▼
+  CANCELLED
+```
+
+---
+
+## Slide 5: Entity-Relationship Diagram
+
+**Title:** Data Model — Core Entities & Relationships
+
+```
+┌──────────┐        ┌──────────────┐       ┌──────────┐
+│  Users   │1─────<│    Salons    │>─────1│          │
+│──────────│        │──────────────│       │          │
+│ id (PK)  │        │ id (PK)      │       │          │
+│ name     │        │ owner_id(FK) │       │          │
+│ email    │        │ name         │       │          │
+│ phone    │        │ address      │       │          │
+│ role     │        │ open_time    │       │          │
+│ password │        │ close_time   │       │          │
+└──────────┘        │ day_off      │       └──────────┘
+                    │ lunch_start  │
+                    │ lunch_end    │
+                    └──────┬───────┘
+                           │1
+              ┌────────────┼────────────┐
+              │            │            │
+              ▼<           ▼<           ▼<
+    ┌──────────────┐  ┌─────────┐  ┌──────────────┐
+    │SalonServices │  │  Slots  │  │   Bookings   │
+    │──────────────│  │─────────│  │──────────────│
+    │ salon_id(FK) │  │ id(PK)  │  │ id (PK)      │
+    │ service_id(FK│  │salon_id │  │ customer_id  │
+    │ custom_price │  │date     │  │ salon_id     │
+    └──────┬───────┘  │start_t  │  │ status       │
+           │          │end_t    │  │ hold_expires │
+    ┌──────▼──────┐   │status   │  └──────┬───────┘
+    │  Services   │   └─────────┘         │1
+    │─────────────│                       ▼<
+    │ id (PK)     │              ┌─────────────────┐
+    │ name        │              │     Reviews     │
+    │ duration    │              │─────────────────│
+    │ base_price  │              │ booking_id (FK) │
+    └─────────────┘              │ rating (1–5)    │
+                                 │ comment         │
+                    ┌────────────┴─────────────────┘
+                    │
+                    ▼<
+          ┌──────────────────┐
+          │  Notifications   │
+          │──────────────────│
+          │ user_id (FK)     │
+          │ type (email/sms) │
+          │ message          │
+          │ sent_at          │
+          └──────────────────┘
+```
+
+**Key Constraints:**
+
+- One `User` → at most one `Salon` (owner role)
+- `Booking` status drives slot availability (hold → confirm/reject/cancel)
+- `Review` is 1:1 with a `Booking` (only after `COMPLETED`)
+
+---
+
+## Slide 6: API Design
+
+**Title:** REST API Surface
+
+### Auth — `/api/auth` (Public)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/register` | Register new user (owner or customer) |
+| POST | `/login` | Authenticate & create session |
+| POST | `/logout` | Destroy session |
+| GET | `/me` | Get current session user |
+| POST | `/reset-password` | Reset via email + last 4 digits of phone |
+
+### Owner — `/api/owner` *(owner role required)*
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/PUT | `/profile` | View or update salon profile |
+| PUT | `/schedule` | Update working hours & lunch break |
+| GET/POST | `/services` | List or add services |
+| DELETE | `/services/:id` | Remove a service |
+| GET | `/bookings` | View all incoming bookings |
+| PUT | `/bookings/:id/confirm` | Confirm a booking |
+| PUT | `/bookings/:id/reject` | Reject a booking |
+
+### Customer — `/api/customer` *(customer role required)*
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/owners` | Browse all registered salons |
+| GET | `/owners/:id` | Salon detail + services + rating |
+| GET | `/owners/:id/slots` | Available slots for a date |
+| GET/POST | `/bookings` | List or create bookings |
+| PUT | `/bookings/:id/confirm` | Confirm within 10-min hold |
+| PUT | `/bookings/:id/cancel` | Cancel a booking |
+| POST | `/reviews` | Submit rating & review |
+
+### Public
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/services` | Global services catalogue |
+| GET | `/api/health` | Server + DB health check |
+
+---
+
+## Slide 7: Deployment Architecture
+
+**Title:** Deployment — From Dev to Production
+
+### Environment Configuration (.env)
+
+```env
+PORT=3000
+NODE_ENV=production
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=saloon_booking
+DB_USER=postgres
+DB_PASSWORD=<strong-password>
+SESSION_SECRET=<32-char-random-string>
+```
+
+### Local / Single-Server Deployment
+
+```
+Internet
+   │
+   ▼
+┌──────────────────────────────────────────┐
+│  Nginx (Reverse Proxy · Port 80/443)     │
+│  SSL Termination · Static File Serving   │
+└─────────────────┬────────────────────────┘
+                  │ proxy_pass :3000
+┌─────────────────▼────────────────────────┐
+│  Node.js App (PM2 Process Manager)       │
+│  pm2 start server.js --name salon-app    │
+│  pm2 startup · pm2 save                  │
+└─────────────────┬────────────────────────┘
+                  │ Sequelize (localhost)
+┌─────────────────▼────────────────────────┐
+│  PostgreSQL 14+ (systemd service)        │
+│  DB: saloon_booking                      │
+└──────────────────────────────────────────┘
+```
+
+### Setup Commands (Linux Production)
+
+```bash
+# 1. Install dependencies & run DB setup
+chmod +x scripts/setup-linux.sh && ./scripts/setup-linux.sh
+
+# 2. Start with PM2
+npm install -g pm2
+pm2 start server.js --name salon-app
+pm2 startup && pm2 save
+
+# 3. Nginx virtual host
+server {
+  listen 80;
+  server_name yourdomain.com;
+  location / { proxy_pass http://localhost:3000; }
+  location /public { root /var/www/salon-booking; }
+}
+```
+
+### npm Operational Scripts
+
+| Script | Purpose |
+|---|---|
+| `npm start` | Production server |
+| `npm run dev` | Dev with nodemon auto-reload |
+| `npm run db:migrate` | Apply all migrations |
+| `npm run db:seed` | Load demo data |
+| `npm run db:reset` | Full reset: undo → migrate → seed |
+
+---
+
+## Slide 8: Tech Stack & Project Structure
+
+**Title:** Technology Choices & Codebase Organisation
+
+### Tech Stack Summary
+
+| Layer | Technology | Reason |
+|---|---|---|
+| **Frontend** | HTML5, CSS3, jQuery 3.7, Vanilla JS | Zero-build, lightweight, browser-native |
+| **Backend** | Node.js 18+, Express.js 4 | Async I/O, huge ecosystem, fast to develop |
+| **Database** | PostgreSQL 14+ | ACID compliance, relational integrity |
+| **ORM** | Sequelize 6 + Migrations | Schema versioning, safe deployments |
+| **Session** | express-session + connect-session-sequelize | DB-backed sessions, no extra infra |
+| **Scheduler** | node-cron | In-process cron, no external queue needed |
+| **Auth** | bcryptjs | Industry-standard password hashing |
+| **Process Mgr** | PM2 *(production)* | Auto-restart, clustering, log management |
+| **Proxy** | Nginx *(production)* | SSL termination, static assets, load balance |
+
+### Project Structure (Condensed)
+
+```
+salon-booking-system/
+├── config/          app.js · database.js · session.js
+├── db/              migrations/ (8 files) · seeders/ (5 files)
+├── docs/            HLD · LLD · ER · Class Diagram · Deployment
+├── logs/            notification logs (auto-created at runtime)
+├── public/          css/ · js/ · owner/ · customer/ · *.html
+├── scripts/         setup-windows.bat · setup-linux.sh
+├── src/
+│   ├── controllers/ auth · owner · customer · booking
+│   ├── jobs/        scheduler · releaseSlots · autoConfirm
+│   ├── middleware/  auth · validation · errorHandler
+│   ├── models/      8 Sequelize models
+│   ├── routes/      auth · owner · customer · public
+│   ├── services/    auth · booking · slot · owner · review · notification
+│   └── utils/       logger · timeUtils · validators
+├── app.js           Express app bootstrap
+└── server.js        Entry point + cron initialisation
+```
+
+---
+
+> 📁 Full technical documentation in docs — HLD · LLD · ER-DIAGRAM · CLASS-DIAGRAM · DEPLOYMENT
